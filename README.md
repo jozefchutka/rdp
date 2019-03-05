@@ -7,8 +7,8 @@ Remote desktop via HTML. This is a POC and is not to safe for production purpose
 ffmpeg -f dshow -i video="screen-capture-recorder" -r 24 -vcodec libx264 -preset ultrafast -tune zerolatency -crf 18 -f hls -hls_time 1 -hls_flags delete_segments+split_by_time stream/stream.m3u8
 ```
 2. make the produced .m3u8 available over http
-3. start server to consume user interaction (mouse events)
-4. load client
+3. start server to consume user interaction (mouse events), see /server/README.md
+4. load client player (in chrome)
 
 ## Screen Capturing with FFMPEG
 
