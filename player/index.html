@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="hls.js"></script>
+<style>
+html, body {margin: 0;padding: 0;}
+
+</style>
+</head>
+<body>
+<video autoplay muted width="100%"></video>
+<script>
+var video = document.getElementsByTagName("video")[0];
+
+var config = {
+	autoStartLoad: true,
+	debug: true,
+	maxBufferLength: 0.5,
+	liveSyncDurationCount: 0,
+	maxMaxBufferLength: 1,
+	startFragPrefetch: true,
+}
+
+var player = new Hls(config);
+player.startLevel = 0;
+player.attachMedia(video);
+player.on(Hls.Events.MEDIA_ATTACHED, function () {
+	player.loadSource("http://10.2.3.40/Massive/tmp/hls/stream/stream.m3u8");
+});
+
+async function moveMouse(clientX, clientY){
+	var x = clientX / video.clientWidth * video.videoWidth;
+	var y = clientY / video.clientHeight * video.videoHeight;
+	await fetch("http://10.2.3.40:8080/?command=robot.moveMouse(" + x + "," + y + ")");
+}
+
+video.addEventListener("click", async function(event){
+	moveMouse(event.clientX, event.clientY);
+	await fetch("http://10.2.3.40:8080/?command=robot.mouseClick()");
+});
+
+video.addEventListener("mousemove", async function(event){
+	moveMouse(event.clientX, event.clientY);
+});
+</script>
+</body>
+</html>
