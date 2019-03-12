@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body {margin: 0;padding: 0;}
+video {width:100%;}
+</style>
+</head>
+<body>
+<video autoplay muted></video>
+
+<script type="text/javascript">
+const video = document.getElementsByTagName("video")[0];
+const uuid = createUUID();
+const peerConnectionConfig = {'iceServers': [{'urls': 'stun:stun.stunprotocol.org:3478'}, {'urls': 'stun:stun.l.google.com:19302'}]};
+var peerConnection;
+var serverConnection;
+
+function start() {
+	serverConnection = new WebSocket('wss://' + window.location.hostname + ':8443');
+	serverConnection.onmessage = onServerMessage;
+	serverConnection.onopen = onServerOpen;
+}
+
+async function onServerOpen() {
+	peerConnection = new RTCPeerConnection(peerConnectionConfig);
+	peerConnection.onicecandidate = onPeerIceCandidate;
+	peerConnection.ontrack = onPeerTrack;
+	createdDescription(await peerConnection.createOffer({offerToReceiveVideo:1}));
+}
+
+async function onServerMessage(message) {
+	var signal = JSON.parse(message.data);
+	if(signal.uuid == uuid) return;
+
+	if(signal.sdp) {
+		await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+		if(signal.sdp.type == 'offer')
+			createdDescription(peerConnection.createAnswer());
+	}
+}
+
+function onPeerIceCandidate(event) {
+	if(event.candidate != null)
+		serverConnection.send(JSON.stringify({'ice': event.candidate, 'uuid': uuid}));
+}
+
+async function createdDescription(description) {
+	await peerConnection.setLocalDescription(description);
+	serverConnection.send(JSON.stringify({'sdp': peerConnection.localDescription, 'uuid': uuid}));
+}
+
+function onPeerTrack(event) {
+	video.srcObject = event.streams[0];
+	video.addEventListener("mousemove", onVideoMouseMove);
+	video.addEventListener("click", onVideoClick);
+}
+
+function moveMouse(clientX, clientY){
+	var x = clientX / video.clientWidth * video.videoWidth;
+	var y = clientY / video.clientHeight * video.videoHeight;
+	serverConnection.send(JSON.stringify({'command': "robot.moveMouse(" + x + "," + y + ")"}));
+}
+
+function onVideoMouseMove(event) {
+	moveMouse(event.clientX, event.clientY);
+}
+
+function onVideoClick(event){
+	moveMouse(event.clientX, event.clientY);
+	serverConnection.send(JSON.stringify({'command': "robot.mouseClick()"}));
+}
+
+// Taken from http://stackoverflow.com/a/105074/515584
+// Strictly speaking, it's not a real UUID, but it gets the job done here
+function createUUID() {
+	function s4() {
+		return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+	}
+	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
+
+start();
+
+</script>
+</body>
+</html>

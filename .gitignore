@@ -1,4 +1,1 @@
-/start.bat
-/server/node_modules
-/server/package-lock.json
-/stream/stream*
+/node_modules
