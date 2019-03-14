@@ -15,6 +15,7 @@ const uuid = createUUID();
 const peerConnectionConfig = {'iceServers': [{'urls': 'stun:stun.stunprotocol.org:3478'}, {'urls': 'stun:stun.l.google.com:19302'}]};
 var peerConnection;
 var serverConnection;
+var senderScreen;
 
 function start() {
 	serverConnection = new WebSocket('wss://' + window.location.hostname + ':8443');
@@ -37,6 +38,8 @@ async function onServerMessage(message) {
 		await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
 		if(signal.sdp.type == 'offer')
 			createdDescription(peerConnection.createAnswer());
+		if(signal.screen)
+			senderScreen = signal.screen;
 	}
 }
 
@@ -57,9 +60,9 @@ function onPeerTrack(event) {
 }
 
 function moveMouse(clientX, clientY){
-	var x = clientX / video.clientWidth * video.videoWidth;
-	var y = clientY / video.clientHeight * video.videoHeight;
-	serverConnection.send(JSON.stringify({'command': "robot.moveMouse(" + x + "," + y + ")"}));
+	var x = clientX / video.clientWidth * senderScreen.width;
+	var y = clientY / video.clientHeight * senderScreen.height;
+	//serverConnection.send(JSON.stringify({'command': "robot.moveMouse(" + x + "," + y + ")"}));
 }
 
 function onVideoMouseMove(event) {
@@ -68,7 +71,7 @@ function onVideoMouseMove(event) {
 
 function onVideoClick(event){
 	moveMouse(event.clientX, event.clientY);
-	serverConnection.send(JSON.stringify({'command': "robot.mouseClick()"}));
+	//serverConnection.send(JSON.stringify({'command': "robot.mouseClick()"}));
 }
 
 // Taken from http://stackoverflow.com/a/105074/515584

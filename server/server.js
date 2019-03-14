@@ -16,7 +16,7 @@ const handleRequest = function(request, response) {
 
 	if(request.url === '/') {
 		response.writeHead(200, {'Content-Type': 'text/html'});
-		response.end(fs.readFileSync('client/index.html'));
+		response.end(fs.readFileSync('client/receiver.html'));
 	} else if(request.url === '/sender') {
 		response.writeHead(200, {'Content-Type': 'text/html'});
 		response.end(fs.readFileSync('client/sender.html'));

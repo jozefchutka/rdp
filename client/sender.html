@@ -11,7 +11,9 @@ var peerConnection;
 var serverConnection;
 
 async function start() {
-	localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+	var label = "screen-capture-recorder";
+	var deviceId = (await navigator.mediaDevices.enumerateDevices()).find(device => device.label == label).deviceId;
+	localStream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:deviceId}}, audio:false});
 	serverConnection = new WebSocket('wss://' + window.location.hostname + ':8443');
 	serverConnection.onmessage = onServerMessage;
 	serverConnection.onopen = onServerOpen;
@@ -36,8 +38,9 @@ async function onServerMessage(message) {
 }
 
 async function createdDescription(description) {
+	var screen = {width:window.screen.width, height:window.screen.height};
 	await peerConnection.setLocalDescription(description);
-	serverConnection.send(JSON.stringify({'sdp': peerConnection.localDescription, 'uuid': uuid}));
+	serverConnection.send(JSON.stringify({'sdp':peerConnection.localDescription, 'uuid':uuid, 'screen':screen}));
 }
 
 start();
