@@ -7,6 +7,7 @@
 const uuid = "sender";
 const peerConnectionConfig = {'iceServers': [{'urls': 'stun:stun.stunprotocol.org:3478'}, {'urls': 'stun:stun.l.google.com:19302'}]};
 var localStream;
+var localStreamTrack;
 var peerConnection;
 var serverConnection;
 
@@ -14,6 +15,7 @@ async function start() {
 	var label = "screen-capture-recorder";
 	var deviceId = (await navigator.mediaDevices.enumerateDevices()).find(device => device.label == label).deviceId;
 	localStream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:deviceId}}, audio:false});
+	localStreamTrack = localStream.getTracks()[0];
 	serverConnection = new WebSocket('wss://' + window.location.hostname + ':8443');
 	serverConnection.onmessage = onServerMessage;
 	serverConnection.onopen = onServerOpen;
@@ -21,10 +23,12 @@ async function start() {
 
 function onServerOpen() {
 	peerConnection = new RTCPeerConnection(peerConnectionConfig);
-	peerConnection.addTrack(localStream.getTracks()[0], localStream);
+	peerConnection.addTrack(localStreamTrack, localStream);
 	peerConnection.oniceconnectionstatechange = function(event){
-		if(peerConnection.iceConnectionState === "disconnected")
+		if(peerConnection.iceConnectionState === "disconnected"){
+			peerConnection.close();
 			onServerOpen();
+		}
 	}
 }
 
@@ -42,7 +46,8 @@ async function onServerMessage(message) {
 }
 
 async function createdDescription(description) {
-	var screen = {width:window.screen.width, height:window.screen.height};
+	var settings = localStreamTrack.getSettings();
+	var screen = {width:settings.width, height:settings.height};
 	await peerConnection.setLocalDescription(description);
 	serverConnection.send(JSON.stringify({'sdp':peerConnection.localDescription, 'uuid':uuid, 'screen':screen}));
 }
