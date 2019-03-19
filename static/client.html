@@ -18,7 +18,7 @@ var serverConnection;
 var senderScreen;
 
 function start() {
-	serverConnection = new WebSocket('wss://' + window.location.hostname + ':8443');
+	serverConnection = new WebSocket('wss://' + window.location.host);
 	serverConnection.onmessage = onServerMessage;
 	serverConnection.onopen = onServerOpen;
 }
@@ -34,14 +34,10 @@ async function onServerMessage(message) {
 	var signal = JSON.parse(message.data);
 	if(signal.uuid == uuid) return;
 
-	// https://stackoverflow.com/questions/48963787/failed-to-set-local-answer-sdp-called-in-wrong-state-kstable
-	if(signal.sdp && !senderScreen) {
+	if(signal.sdp) {
+		await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
 		if(signal.screen)
 			senderScreen = signal.screen;
-
-		await peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-		if(signal.sdp.type == 'offer')
-			createdDescription(peerConnection.createAnswer());
 	}
 }
 

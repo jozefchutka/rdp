@@ -16,7 +16,7 @@ async function start() {
 	var deviceId = (await navigator.mediaDevices.enumerateDevices()).find(device => device.label == label).deviceId;
 	localStream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:deviceId}}, audio:false});
 	localStreamTrack = localStream.getTracks()[0];
-	serverConnection = new WebSocket('wss://' + window.location.hostname + ':8443');
+	serverConnection = new WebSocket('wss://' + window.location.host);
 	serverConnection.onmessage = onServerMessage;
 	serverConnection.onopen = onServerOpen;
 }
