@@ -16,10 +16,10 @@ const handleRequest = function(request, response) {
 
 	if(request.url === '/') {
 		response.writeHead(200, {'Content-Type': 'text/html'});
-		response.end(fs.readFileSync('client/receiver.html'));
-	} else if(request.url === '/sender') {
+		response.end(fs.readFileSync('static/client.html'));
+	} else if(request.url === '/server') {
 		response.writeHead(200, {'Content-Type': 'text/html'});
-		response.end(fs.readFileSync('client/sender.html'));
+		response.end(fs.readFileSync('static/server.html'));
 	}
 };
 
@@ -43,12 +43,15 @@ wss.on('connection', function(ws) {
 				client.send(message);
 		});
 	});
+	
+	ws.on('error', function(error){
+	});
 });
 
 async function start(){
 	const browser = await puppeteer.launch({args: ['--remote-debugging-port=9222', '--use-fake-ui-for-media-stream']});
 	const page = await browser.newPage();
-	await page.goto('https://localhost:' + HTTPS_PORT + '/sender');
+	await page.goto('https://localhost:' + HTTPS_PORT + '/server');
 	console.log('Server running. Visit https://localhost:' + HTTPS_PORT);
 }
 

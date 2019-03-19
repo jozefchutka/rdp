@@ -1,4 +1,4 @@
-1. `npm start`
+1. `npm start` (or `npm run debug`)
 2. client in browser: https://localhost:8443
 
 ## Issues

@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "debug": "node --inspect server/server.js"
   },
   "dependencies": {
     "puppeteer": "^1.13.0",

@@ -22,6 +22,10 @@ async function start() {
 function onServerOpen() {
 	peerConnection = new RTCPeerConnection(peerConnectionConfig);
 	peerConnection.addTrack(localStream.getTracks()[0], localStream);
+	peerConnection.oniceconnectionstatechange = function(event){
+		if(peerConnection.iceConnectionState === "disconnected")
+			onServerOpen();
+	}
 }
 
 async function onServerMessage(message) {
