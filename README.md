@@ -7,7 +7,6 @@ WebRTC based remote desktop sharing. Inspired by [WebRTC-Example](https://github
 
 # Dependencies
 
-- [screen-capture-recorder](https://github.com/rdp/screen-capture-recorder-to-video-windows-free) creates a virtual webcam to stream desktop
 - node v10.15.1
-- chrome 72
+- chrome 75
 - win 10

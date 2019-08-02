@@ -12,9 +12,7 @@ var peerConnection;
 var serverConnection;
 
 async function start() {
-	var label = "screen-capture-recorder";
-	var deviceId = (await navigator.mediaDevices.enumerateDevices()).find(device => device.label == label).deviceId;
-	localStream = await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:deviceId}}, audio:false});
+	localStream = await navigator.mediaDevices.getUserMedia({video:{mediaSource:'screen'}, audio:false});
 	localStreamTrack = localStream.getTracks()[0];
 	serverConnection = new WebSocket('wss://' + window.location.host);
 	serverConnection.onmessage = onServerMessage;
